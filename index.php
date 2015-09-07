@@ -117,6 +117,7 @@ function sub_input ($head,$ot,$do){
 
 
 
+
 $sock = socket_create(AF_INET,SOCK_STREAM,0);
 socket_bind($sock,'127.0.0.1',80);
 socket_listen($sock,10);
@@ -130,12 +131,11 @@ $http['types'] = array();
 $http['size_lefts'] = array();
 $http['dataToconnects'] = array();
 $http['positionInPointers'] = array();
-
 $http['DownloadSpeed'] = array();
+
 $files = "C:\Users\Я\Desktop\server_eLaiL\htdocs\\";
 
 $con_i = 0;
-
 $pointer = 0;
 
 
@@ -297,7 +297,7 @@ while(true) {
                 if (isset($http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]])) $http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]] = $http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]] - $bytes;
             }
 
-            $http['positionInPointers'][$pointer] = + 1;
+            $http['positionInPointers'][$pointer]++;
             $pointer++;
 
             //Все щетчики сумируются в конце
