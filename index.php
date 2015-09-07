@@ -130,7 +130,7 @@ $http['fopens'] = array();
 $http['types'] = array();
 $http['size_lefts'] = array();
 $http['dataToconnects'] = array();
-$http['positionInPointers'] = array();
+$http['posInPoint'] = array();
 $http['DownloadSpeed'] = array();
 
 $files = "C:\Users\Я\Desktop\server_eLaiL\htdocs\\";
@@ -176,7 +176,7 @@ while(true) {
                 if ($present === false or $present === null) {//Если такого нету
                     $http['connects'][$con_i][] = $connect;
                     $http['dataToconnects'][$con_i] = $data_paketa;
-                    $http['positionInPointers'][$con_i] = 0;
+                    $http['posInPoint'][$con_i] = 0;
 
                     if ($filename === '1.mp3'){
                         $http['DownloadSpeed'][$con_i] = 1024;
@@ -257,47 +257,47 @@ while(true) {
     }
 
     if (isset($http['connects'][$pointer])){
-        $input_data = @socket_read($http['connects'][$pointer][$http['positionInPointers'][$pointer]], 1024);
+        $input_data = @socket_read($http['connects'][$pointer][$http['posInPoint'][$pointer]], 1024);
         $err = socket_last_error();
 
         if ($err === 10054) { // Если соединение прервано
-            socket_close($http['connects'][$pointer][$http['positionInPointers'][$pointer]]);
-            unset($http['connects'][$pointer][$http['positionInPointers'][$pointer]], $http['fopens'][$pointer][$http['positionInPointers'][$pointer]], $http['types'][$pointer][$http['positionInPointers'][$pointer]],$http['positionInPointers'][$pointer]);
+            socket_close($http['connects'][$pointer][$http['posInPoint'][$pointer]]);
+            unset($http['connects'][$pointer][$http['posInPoint'][$pointer]], $http['fopens'][$pointer][$http['posInPoint'][$pointer]], $http['types'][$pointer][$http['posInPoint'][$pointer]],$http['posInPoint'][$pointer]);
             echo 'connection ' . " closed.\r\n";
         }
 
-        if (isset($http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]]) and $http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]] <= 0) {
-            if (isset($http['fopens'][$pointer][$http['positionInPointers'][$pointer]])) fclose($http['fopens'][$pointer][$http['positionInPointers'][$pointer]]);
-            unset($http['positionInPointers'][$pointer],$http['fopens'][$pointer][$http['positionInPointers'][$pointer]], $http['types'][$pointer][$http['positionInPointers'][$pointer]], $http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]]);
+        if (isset($http['size_lefts'][$pointer][$http['posInPoint'][$pointer]]) and $http['size_lefts'][$pointer][$http['posInPoint'][$pointer]] <= 0) {
+            if (isset($http['fopens'][$pointer][$http['posInPoint'][$pointer]])) fclose($http['fopens'][$pointer][$http['posInPoint'][$pointer]]);
+            unset($http['posInPoint'][$pointer],$http['fopens'][$pointer][$http['posInPoint'][$pointer]], $http['types'][$pointer][$http['posInPoint'][$pointer]], $http['size_lefts'][$pointer][$http['posInPoint'][$pointer]]);
             echo 'filesend end ' . "\r\n";
         }
     }
 
     if (isset($http['types'][$pointer])) {
-        if ($http['types'][$pointer][$http['positionInPointers'][$pointer]] === 'php') {
+        if ($http['types'][$pointer][$http['posInPoint'][$pointer]] === 'php') {
             ob_start();
             include("$dirrr");
             $out1 = ob_get_contents();
             ob_clean();
-            @socket_write($http['connects'][$pointer][$http['positionInPointers'][$pointer]], $out1);
+            @socket_write($http['connects'][$pointer][$http['posInPoint'][$pointer]], $out1);
         }
     }
 
 
     if (isset($http['types'][$pointer])) {
-        if ($http['types'][$pointer][$http['positionInPointers'][$pointer]] === 'text/plain' or $http['types'][$pointer][$http['positionInPointers'][$pointer]] === 'audio/mpeg') {
+        if ($http['types'][$pointer][$http['posInPoint'][$pointer]] === 'text/plain' or $http['types'][$pointer][$http['posInPoint'][$pointer]] === 'audio/mpeg') {
 
-            $fred = fread($http['fopens'][$pointer][$http['positionInPointers'][$pointer]], $http['DownloadSpeed'][$pointer]);
-            $bytes = @socket_write($http['connects'][$pointer][$http['positionInPointers'][$pointer]], $fred, $http['DownloadSpeed'][$pointer]);
+            $fred = fread($http['fopens'][$pointer][$http['posInPoint'][$pointer]], $http['DownloadSpeed'][$pointer]);
+            $bytes = @socket_write($http['connects'][$pointer][$http['posInPoint'][$pointer]], $fred, $http['DownloadSpeed'][$pointer]);
 
             if ($bytes === 0 or $bytes === false) {
-                $f = ftell($http['fopens'][$pointer][$http['positionInPointers'][$pointer]]);
-                fseek($http['fopens'][$pointer][$http['positionInPointers'][$pointer]], $f - $http['DownloadSpeed'][$pointer]);
+                $f = ftell($http['fopens'][$pointer][$http['posInPoint'][$pointer]]);
+                fseek($http['fopens'][$pointer][$http['posInPoint'][$pointer]], $f - $http['DownloadSpeed'][$pointer]);
             } else {
-                if (isset($http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]])) $http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]] = $http['size_lefts'][$pointer][$http['positionInPointers'][$pointer]] - $bytes;
+                if (isset($http['size_lefts'][$pointer][$http['posInPoint'][$pointer]])) $http['size_lefts'][$pointer][$http['posInPoint'][$pointer]] = $http['size_lefts'][$pointer][$http['posInPoint'][$pointer]] - $bytes;
             }
 
-            $http['positionInPointers'][$pointer]++;
+            $http['posInPoint'][$pointer]++;
             $pointer++;
 
             //Все щетчики сумируются в конце
@@ -306,17 +306,16 @@ while(true) {
                 $pointer = $kays[0];
                 usleep(1000000);
             } else {
-
                 $pointer = $kays[$pointer];
             }
 
 
             $in_kays = array_keys($http['connects'][$pointer]);
-            if ($http['positionInPointers'][$pointer] >= count($in_kays)) {
-                $http['positionInPointers'][$pointer] = $in_kays[0];
+            if ($http['posInPoint'][$pointer] >= count($in_kays)) {
+                $http['posInPoint'][$pointer] = $in_kays[0];
             } else {
 
-                $http['positionInPointers'][$pointer] = $in_kays[$http['positionInPointers'][$pointer]];
+                $http['posInPoint'][$pointer] = $in_kays[$http['posInPoint'][$pointer]];
             }
         }
     }
