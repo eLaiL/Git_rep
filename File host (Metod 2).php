@@ -5,7 +5,6 @@
  * Date: 06.09.2015
  * Time: 15:43
  */
-
 function formats ($type){
     $formats = array(
         ".pdf"          =>      "application/pdf",
@@ -76,23 +75,17 @@ function formats ($type){
         ".otf"          =>      "application/vnd.oasis.opendocument.formula-template",
         ".oti"          =>      "application/vnd.oasis.opendocument.image-template",
         ".oth"          =>      "application/vnd.oasis.opendocument.text-web",
-
         # make the default mime type application/octet-stream.
         "."              =>      "text/html",
         ".php"          =>      "php"
     );
-
     foreach ($formats as $k => $v){
         if ($k === $type) return $v;
     }
 }
-
-
-
 function Replacing_key_names($head){
     $mass = explode("\n",$head);
     $http = array_shift($mass);
-
     foreach ($mass as $k => $v){
         $pos = strpos($v,":");
         $sub1 = substr($v,0,$pos);
@@ -103,86 +96,105 @@ function Replacing_key_names($head){
     $mass["http"] = $http;
     return $mass;
 }
-
-
 function sub_input ($head,$ot,$do){
     $strlen = strlen($ot);
     $pos_ot = strpos($head,$ot)+$strlen;
-
     $pos_do = strpos($head,$do,$pos_ot);
     $lenght = $pos_do-$pos_ot;
     $sub = substr($head,$pos_ot,$lenght);
     return $sub;
 }
-
-
-
-
 $sock = socket_create(AF_INET,SOCK_STREAM,0);
 socket_bind($sock,'127.0.0.1',80);
 socket_listen($sock,10);
 socket_set_nonblock($sock);
 
 
-
 $http['connects'] = array ();
 $http['fopens'] = array();
 $http['types'] = array();
 $http['size_lefts'] = array();
-$http['dataToconnects'] = array();
-$http['posInPoint'] = array();
+$http['dataConnects'] = array();
+$http['in'] = array();
 $http['DownloadSpeed'] = array();
+$http['Time_response'] = array();
+$http['timeToAdd'] = array();
+
+
 
 $files = "C:\Users\Я\Desktop\server_eLaiL\htdocs\\";
 
 $con_i = 0;
-$pointer = 0;
-
+$point = 0;
+$buff = 1024;
 
 while(true) {
     $present = null;
-
     $connect = @socket_accept($sock);//Проверяем новое подключение
     if ($connect !== false) {
-
         $input_data = @socket_read($connect, 1024);
         if ($input_data !== false) {
 
             $filename = @sub_input($input_data, "GET /", " ");
             $ip_xosta = @sub_input($input_data, "Referer: ", "\n");
-
-
+            $data_paketa = $ip_xosta . "," . $filename;
             $dirrr = $files . $filename;
             $exist = file_exists($dirrr);
             if ($exist !== false) {
+
+                $kays_datu = array_keys($http['dataConnects']);
+                foreach ($kays_datu as $k => $value) {
+                    $mass_paketov = $http['dataConnects'][$value];
+                    if ($data_paketa === $mass_paketov) {
+                        $http['connects'][$value][] = $connect;
+                        $present = true;
+                    }
+                }
+                if ($present === false or $present === null) {//Если такого нету
+                    $http['connects'][$con_i][] = $connect;
+                    $http['dataConnects'][$con_i] = $data_paketa;
+                    $http['in'][$con_i] = 0;
+
+                    $rezult = $Dw/$buff;//Этим мы узнаем сколько раз нуждно срабатывать на секунду
+                    $rezult = 1000/$rezult;//Тут мы узнаем сколько раз на 1000 Мсек
+                    $http['timeToAdd'][$con_i] = $rezult;
+                    $http['Time_response'][$con_i] = microtime(true)+$rezult;
+
+                    if ($filename === '1.mp3'){
+                        $http['DownloadSpeed'][$con_i] = 1024;
+                    }else{
+                        $http['DownloadSpeed'][$con_i] = 1024*1024;
+                    }
+                }
 
                 $filesize = filesize($dirrr);
                 $pos = strpos($filename, '.');
                 $sub = substr($filename, $pos, strlen($filename));
                 $type = formats($sub);
 
-                $http['connects'][$con_i] = $connect;
-                $http['fopens'][$con_i] = fopen($dirrr, 'r');
-                $http['types'][$con_i] = $type;
+                if ($present !== null) {
+                    $http['fopens'][$value][] = fopen($dirrr, 'r');
+                    $http['types'][$value][] = $type;
+                    $mass_replaced_kays = Replacing_key_names($input_data);
 
-                $mass_replaced_kays = Replacing_key_names($input_data);
-
-                if (isset($mass_replaced_kays['Range'])) {
-                    $pos = strpos($mass_replaced_kays['Range'], "=");
-                    $pos2 = strpos($mass_replaced_kays['Range'], "-") - 1;
-                    $len = $pos2 - $pos;
-                    $range_bytes = substr($mass_replaced_kays['Range'], $pos + 1, $len);
-                    $filesize = $filesize - $range_bytes;
-
-                    $http['size_lefts'][$con_i] = $filesize;
-                    fseek($http['fopens'][$con_i], $range_bytes);
-                    echo 'connection ' . $con_i . " seek $range_bytes.\r\n";
+                    if (isset($mass_replaced_kays['Range'])) {
+                        $pos = strpos($mass_replaced_kays['Range'], "=");
+                        $pos2 = strpos($mass_replaced_kays['Range'], "-") - 1;
+                        $len = $pos2 - $pos;
+                        $range_bytes = substr($mass_replaced_kays['Range'], $pos + 1, $len);
+                        $filesize = $filesize - $range_bytes;
+                        $http['size_lefts'][$value][] = $filesize;
+                        $count = count($http['size_lefts'][$value]);
+                        fseek($http['fopens'][$value][$count], $range_bytes);
+                        echo 'connection ' . $con_i . " seek $range_bytes.\r\n";
+                    }
+                } else {
+                    $http['fopens'][$con_i][] = fopen($dirrr, 'r');
+                    $http['types'][$con_i][] = $type;
                 }
-                $con_i++;
             } else {
-                $error_file = $filename . 'error_404.html';
+                $error_file = $file . 'error_404.html';
                 $error_size = filesize($error_file);
-
                 date_default_timezone_set('Europe/Kiev');
                 $time = date('r');
                 $scrypt = 'HTTP/1.1 404 Not Found' . "\r\n";
@@ -193,81 +205,97 @@ while(true) {
                 $scrypt .= 'Connection: close' . "\r\n";
                 $scrypt .= 'Content-Type: text/html' . "\r\n";
                 $scrypt .= "\r\n";
-
                 $scrypt .= file_get_contents($error_file);
                 socket_write($connect, $scrypt);
                 socket_close($connect);
             }
+
+            //inpute data file browser
+            date_default_timezone_set('Europe/Kiev');
+            $time  = date('r');
+            $scrypt = 'HTTP/1.1 200 OK'."\r\n";
+            $scrypt .= 'Date: '.$time."\r\n";
+            $scrypt .= 'Server: eLaiL'."\r\n";
+            $scrypt .= 'Accept-Ranges: bytes'."\r\n";
+            $scrypt .= 'Content-Length: '.$filesize."\r\n";
+            $scrypt .= 'Keep-Alive: timeout=5, max=100'."\r\n";
+            $scrypt .= 'Connection: Keep-Alive'."\r\n";
+            $scrypt .= 'Content-Type: '.$type."\r\n";
+            $scrypt .= "\r\n";
+            socket_write($connect,$scrypt);
+            echo 'connection '.$con_i." start download $dirrr.\r\n";
+            $con_i++;
         }
     }
 
-    if (isset($http['connects'][$pointer])){
-        $input_data = @socket_read($http['connects'][$pointer][$http['posInPoint'][$pointer]], 1024);
-        $err = socket_last_error();
 
+    if (isset($http['connects'][$point])){
+        $input_data = @socket_read($http['connects'][$point][$http['in'][$point]], 1024);
+        $err = socket_last_error();
         if ($err === 10054) { // Если соединение прервано
-            socket_close($http['connects'][$pointer][$http['posInPoint'][$pointer]]);
-            unset($http['connects'][$pointer][$http['posInPoint'][$pointer]], $http['fopens'][$pointer][$http['posInPoint'][$pointer]], $http['types'][$pointer][$http['posInPoint'][$pointer]],$http['posInPoint'][$pointer]);
+            socket_close($http['connects'][$point][$http['in'][$point]]);
+            unset($http['connects'][$point][$http['in'][$point]],$http['timeToAdd'][$point],$http['Time_response'][$point], $http['fopens'][$point][$http['in'][$point]], $http['types'][$point][$http['in'][$point]],$http['in'][$point]);
             echo 'connection ' . " closed.\r\n";
         }
 
-        if (isset($http['size_lefts'][$pointer][$http['posInPoint'][$pointer]]) and $http['size_lefts'][$pointer][$http['posInPoint'][$pointer]] <= 0) {
-            if (isset($http['fopens'][$pointer][$http['posInPoint'][$pointer]])) fclose($http['fopens'][$pointer][$http['posInPoint'][$pointer]]);
-            unset($http['posInPoint'][$pointer],$http['fopens'][$pointer][$http['posInPoint'][$pointer]], $http['types'][$pointer][$http['posInPoint'][$pointer]], $http['size_lefts'][$pointer][$http['posInPoint'][$pointer]]);
+        if (isset($http['size_lefts'][$point][$http['in'][$point]]) and $http['size_lefts'][$point][$http['in'][$point]] <= 0) {
+            if (isset($http['fopens'][$point][$http['in'][$point]])) fclose($http['fopens'][$point][$http['in'][$point]]);
+            unset($http['in'][$point],$http['Time_response'][$point],$http['timeToAdd'][$point],$http['fopens'][$point][$http['in'][$point]], $http['types'][$point][$http['in'][$point]], $http['size_lefts'][$point][$http['in'][$point]]);
             echo 'filesend end ' . "\r\n";
         }
     }
 
-    if (isset($http['types'][$pointer])) {
-        if ($http['types'][$pointer][$http['posInPoint'][$pointer]] === 'php') {
+    if (isset($http['types'][$point])) {
+        if ($http['types'][$point][$http['in'][$point]] === 'php') {
             ob_start();
             include("$dirrr");
             $out1 = ob_get_contents();
             ob_clean();
-            @socket_write($http['connects'][$pointer][$http['posInPoint'][$pointer]], $out1);
+            @socket_write($http['connects'][$point][$http['in'][$point]], $out1);
         }
     }
 
 
-    if (isset($http['types'][$pointer])) {
-        if ($http['types'][$pointer][$http['posInPoint'][$pointer]] === 'text/plain' or $http['types'][$pointer][$http['posInPoint'][$pointer]] === 'audio/mpeg') {
+    if (isset($http['types'][$point])) {
+        if ($http['types'][$point][$http['in'][$point]] === 'text/plain' or $http['types'][$point][$http['in'][$point]] === 'audio/mpeg') {
+            $timeEnd = microtime(true);
+            while (1) {
 
-            $fred = fread($http['fopens'][$pointer][$http['posInPoint'][$pointer]], $http['DownloadSpeed'][$pointer]);
-            $bytes = @socket_write($http['connects'][$pointer][$http['posInPoint'][$pointer]], $fred, $http['DownloadSpeed'][$pointer]);
+                if ($http['Time_response'][$point] < $timeEnd) {
 
-            if ($bytes === 0 or $bytes === false) {
-                $f = ftell($http['fopens'][$pointer][$http['posInPoint'][$pointer]]);
-                fseek($http['fopens'][$pointer][$http['posInPoint'][$pointer]], $f - $http['DownloadSpeed'][$pointer]);
-            } else {
-                if (isset($http['size_lefts'][$pointer][$http['posInPoint'][$pointer]])) $http['size_lefts'][$pointer][$http['posInPoint'][$pointer]] = $http['size_lefts'][$pointer][$http['posInPoint'][$pointer]] - $bytes;
+                    $fred = fread($http['fopens'][$point][$http['in'][$point]], $buff);
+                    $bytes = @socket_write($http['connects'][$point][$http['in'][$point]], $fred, $buff);
+
+                    if ($bytes === 0 or $bytes === false) {
+                        $f = ftell($http['fopens'][$point][$http['in'][$point]]);
+                        fseek($http['fopens'][$point][$http['in'][$point]], $f - $buff);
+                    } else {
+                        if (isset($http['size_lefts'][$point][$http['in'][$point]])) $http['size_lefts'][$point][$http['in'][$point]] = $http['size_lefts'][$point][$http['in'][$point]] - $bytes;
+                    }
+
+                    $http['Time_response'][$point] = $http['Time_response'][$point] + $http['timeToAdd'][$point];
+                } else break;
             }
 
-            $http['posInPoint'][$pointer]++;
-            $pointer++;
+            $http['in'][$point]++;
+            $point++;
 
             //Все щетчики сумируются в конце
             $kays = array_keys($http['connects']);
-            if ($pointer >= count($kays)) {
-                $pointer = $kays[0];
-                usleep(1000000);
+            if ($point >= count($kays)) {
+                $point = $kays[0];
             } else {
-                $pointer = $kays[$pointer];
+                $point = $kays[$point];
             }
 
-
-            $in_kays = array_keys($http['connects'][$pointer]);
-            if ($http['posInPoint'][$pointer] >= count($in_kays)) {
-                $http['posInPoint'][$pointer] = $in_kays[0];
+            $in_kays = array_keys($http['connects'][$point]);
+            if ($http['in'][$point] >= count($in_kays)) {
+                $http['in'][$point] = $in_kays[0];
             } else {
-
-                $http['posInPoint'][$pointer] = $in_kays[$http['posInPoint'][$pointer]];
+                $http['in'][$point] = $in_kays[$http['in'][$point]];
             }
         }
     }
-    if(!isset($http['fopens'][$pointer])){
-        usleep(500000);
-    }
+    sleep(1);
 }
 ?>
-
-
