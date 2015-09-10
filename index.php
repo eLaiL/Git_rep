@@ -104,6 +104,9 @@ function sub_input ($head,$ot,$do){
     $sub = substr($head,$pos_ot,$lenght);
     return $sub;
 }
+
+
+
 $sock = socket_create(AF_INET,SOCK_STREAM,0);
 socket_bind($sock,'127.0.0.1',80);
 socket_listen($sock,10);
