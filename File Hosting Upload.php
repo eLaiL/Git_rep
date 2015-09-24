@@ -273,7 +273,6 @@ while(true) {
             }
         }
     }
-
     //newPointer
     if (count($http['read_connects']) > 0) {
         $keys = array_keys($http['read_connects']);
@@ -285,14 +284,16 @@ while(true) {
             $ks++;
             $point = $keys[$ks];
         }
-        $keys = array_keys($http['read_connects'][$point]);
-        $kMax = max($keys);
-        if ($http['in'][$point] >= $kMax) {
-            $http['in'][$point] = min($keys);
-        } else {
-            $ks = array_search($http['in'][$point],$keys);
-            $ks++;
-            $http['in'][$point] = $keys[$ks];
+        if (isset($http['read_connects'][$point])){
+            $keys = array_keys($http['read_connects'][$point]);
+            $kMax = max($keys);
+            if ($http['in'][$point] >= $kMax) {
+                $http['in'][$point] = min($keys);
+            } else {
+                $ks = array_search($http['in'][$point],$keys);
+                $ks++;
+                $http['in'][$point] = $keys[$ks];
+            }
         }
     }
     if (!isset($http['fopens'][$point])){
