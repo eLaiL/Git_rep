@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Я
+ * User: Гџ
  * Date: 21.09.2015
  * Time: 13:29
  */
@@ -126,21 +126,21 @@ $http['Time_response'] = array();
 $http['timeToAdd'] = array();
 
 
-$files = 'C:\Users\Я\Desktop\server_eLaiL\htdocs\\';
+$files = 'C:\Users\Гџ\Desktop\server_eLaiL\htdocs\\';
 $con_i = 0;
 $point = 0;
 $buff = 1024;
 $close_point = 0;
 
 while(true) {
-    $connect = @socket_accept($sock);//Проверяем новое подключение
+    $connect = @socket_accept($sock);//ГЏГ°Г®ГўГҐГ°ГїГҐГ¬ Г­Г®ГўГ®ГҐ ГЇГ®Г¤ГЄГ«ГѕГ·ГҐГ­ГЁГҐ
     if ($connect !== false) {
         $http['connects'][] = $connect;
     }
     foreach ($http['connects'] as $k => $connect){
         $input_data = @socket_read($connect, 1024);
         $err = socket_last_error($connect);
-        if ($err === 10054 || $err === 10053 || $err = false) { // Если соединение прервано
+        if ($err === 10054 || $err === 10053 || $err === false) { // Г…Г±Г«ГЁ Г±Г®ГҐГ¤ГЁГ­ГҐГ­ГЁГҐ ГЇГ°ГҐГ°ГўГ Г­Г®
             unset($http['connects'][$k]);
         }
         if ($input_data !== false && strlen($input_data) > 2) {
@@ -160,14 +160,14 @@ while(true) {
                     }
                 }
 
-                if ($present === false or $present === null) {//Если такого нету
+                if ($present === false or $present === null) {//Г…Г±Г«ГЁ ГІГ ГЄГ®ГЈГ® Г­ГҐГІГі
                     $http['read_connects'][$con_i][] = $connect;
                     $http['dataConnects'][$con_i] = $data_paketa;
                     $http['in'][$con_i] = 0;
                     if (isset($http['DownloadSpeed'][$filename])) $dw = $http['DownloadSpeed'][$filename];
                     else $dw = 1024;
-                    $rezult = $dw/$buff;//Этим мы узнаем сколько раз нуждно срабатывать на секунду
-                    $rezult = 1000/$rezult;//Тут мы узнаем сколько раз на 1000 Мсек
+                    $rezult = $dw/$buff;//ГќГІГЁГ¬ Г¬Г» ГіГ§Г­Г ГҐГ¬ Г±ГЄГ®Г«ГјГЄГ® Г°Г Г§ Г­ГіГ¦Г¤Г­Г® Г±Г°Г ГЎГ ГІГ»ГўГ ГІГј Г­Г  Г±ГҐГЄГіГ­Г¤Гі
+                    $rezult = 1000/$rezult;//Г’ГіГІ Г¬Г» ГіГ§Г­Г ГҐГ¬ Г±ГЄГ®Г«ГјГЄГ® Г°Г Г§ Г­Г  1000 ГЊГ±ГҐГЄ
                     $rezult = $rezult/1000;
                     $http['timeToAdd'][$con_i] = $rezult;
                     $http['Time_response'][$con_i] = microtime(true)+$rezult;
@@ -233,13 +233,13 @@ while(true) {
         }
     }
 
-    if (isset($http['read_connects'][$point]))if (count($http['read_connects'][$point]) === 0){//Удаление Корня сокетов
+    if (isset($http['read_connects'][$point]))if (count($http['read_connects'][$point]) === 0){//Г“Г¤Г Г«ГҐГ­ГЁГҐ ГЉГ®Г°Г­Гї Г±Г®ГЄГҐГІГ®Гў
         unset($http['size_lefts'][$point],$http['fopens'][$point],$http['types'][$point],$http['Time_response'][$point],$http['timeToAdd'][$point],$http['dataConnects'][$point],$http['read_connects'][$point],$http['in'][$point]);
     }
     if (isset($http['read_connects'][$point])){
         $input_data = @socket_read($http['read_connects'][$point][$http['in'][$point]], 1024);
         $err = socket_last_error();
-        if ($err === 10054 || $err === 10053) { // Если соединение прервано
+        if ($err === 10054 || $err === 10053) { // Г…Г±Г«ГЁ Г±Г®ГҐГ¤ГЁГ­ГҐГ­ГЁГҐ ГЇГ°ГҐГ°ГўГ Г­Г®
             if (isset($http['read_connects'][$point][$http['in'][$point]])) {
                 socket_close($http['read_connects'][$point][$http['in'][$point]]);
                 unset($http['size_lefts'][$point][$http['in'][$point]],$http['read_connects'][$point][$http['in'][$point]],$http['fopens'][$point][$http['in'][$point]],$http['types'][$point][$http['in'][$point]]);
