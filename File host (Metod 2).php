@@ -127,7 +127,7 @@ $files = "C:\Users\Я\Desktop\server_eLaiL\htdocs\\";
 $con_i = 0;
 $point = 0;
 $buff = 1024;
-
+$dw = 1024*1024;
 while(true) {
     $present = null;
     $connect = @socket_accept($sock);//Проверяем новое подключение
@@ -155,17 +155,13 @@ while(true) {
                     $http['dataConnects'][$con_i] = $data_paketa;
                     $http['in'][$con_i] = 0;
 
-                    $rezult = $Dw/$buff;//Этим мы узнаем сколько раз нуждно срабатывать на секунду
+                    $rezult = $dw/$buff;//Этим мы узнаем сколько раз нуждно срабатывать на секунду
                     $rezult = 1000/$rezult;//Тут мы узнаем сколько раз на 1000 Мсек
                     $http['timeToAdd'][$con_i] = $rezult;
-                    $http['Time_response'][$con_i] = microtime(true)+$rezult;
 
-                    if ($filename === '1.mp3'){
-                        $http['DownloadSpeed'][$con_i] = 1024;
-                    }else{
-                        $http['DownloadSpeed'][$con_i] = 1024*1024;
-                    }
+                    $http['Time_response'][$con_i] = microtime(true)+$rezult;
                 }
+
 
                 $filesize = filesize($dirrr);
                 $pos = strpos($filename, '.');
@@ -176,6 +172,8 @@ while(true) {
                     $http['fopens'][$value][] = fopen($dirrr, 'r');
                     $http['types'][$value][] = $type;
                     $mass_replaced_kays = Replacing_key_names($input_data);
+
+
 
                     if (isset($mass_replaced_kays['Range'])) {
                         $pos = strpos($mass_replaced_kays['Range'], "=");
@@ -236,7 +234,7 @@ while(true) {
             socket_close($http['connects'][$point][$http['in'][$point]]);
             unset($http['connects'][$point][$http['in'][$point]],$http['timeToAdd'][$point],$http['Time_response'][$point], $http['fopens'][$point][$http['in'][$point]], $http['types'][$point][$http['in'][$point]],$http['in'][$point]);
             echo 'connection ' . " closed.\r\n";
-        }
+        } // тут
 
         if (isset($http['size_lefts'][$point][$http['in'][$point]]) and $http['size_lefts'][$point][$http['in'][$point]] <= 0) {
             if (isset($http['fopens'][$point][$http['in'][$point]])) fclose($http['fopens'][$point][$http['in'][$point]]);
@@ -245,6 +243,7 @@ while(true) {
         }
     }
 
+    
     if (isset($http['types'][$point])) {
         if ($http['types'][$point][$http['in'][$point]] === 'php') {
             ob_start();
@@ -259,12 +258,29 @@ while(true) {
     if (isset($http['types'][$point])) {
         if ($http['types'][$point][$http['in'][$point]] === 'text/plain' or $http['types'][$point][$http['in'][$point]] === 'audio/mpeg') {
             $timeEnd = microtime(true);
-            while (1) {
+            while (1) {// цикл догонки тут провіряти чи сокет дійсний?
+                // тут то доганяэ
+                if (!isset($xr)) {
+                    $xr = 0;
+                    $xt = time()+1;
+                } else {
+                    $xr++;
+                    if ($xt <= time()) {
+                        $afasd[] = $xr; // зберігаєм кількість спрацьовувань данного куска на секунду
+                        $xr = 0;
+                        $xt = time() + 1;
+                    }
+                }
 
-                if ($http['Time_response'][$point] < $timeEnd) {
+                if ($http['Time_response'][$point] < $timeEnd){
 
-                    $fred = fread($http['fopens'][$point][$http['in'][$point]], $buff);
+                    $fred = fread($http['fopens'][$point][$http['in'][$point]], $buff); // не перематуються назад не получившіся типу єслі не вийде ffseek(попередня позицыя) ну я і про це пишу .тільки ччаас в мс віднімати і ставити попередню ясн по інакшому нашо віднімати якшо просто не додасться ну да короче ребілд я не буду робити цим твоїм способом він стремний
                     $bytes = @socket_write($http['connects'][$point][$http['in'][$point]], $fred, $buff);
+
+                    $err = socket_last_error();
+                    if ($err === 10054) {
+                        break;
+                    }
 
                     if ($bytes === 0 or $bytes === false) {
                         $f = ftell($http['fopens'][$point][$http['in'][$point]]);
@@ -272,9 +288,10 @@ while(true) {
                     } else {
                         if (isset($http['size_lefts'][$point][$http['in'][$point]])) $http['size_lefts'][$point][$http['in'][$point]] = $http['size_lefts'][$point][$http['in'][$point]] - $bytes;
                     }
-
-                    $http['Time_response'][$point] = $http['Time_response'][$point] + $http['timeToAdd'][$point];
+                    if ($bytes > 0) // фільтр тільки на спрацювавшуюся запісь\\ + завісає, бо нема обробки сброса подключения в цьому блоку а це
+                        $http['Time_response'][$point] = $http['Time_response'][$point] + $http['timeToAdd'][$point];
                 } else break;
+
             }
 
             $http['in'][$point]++;
@@ -296,6 +313,6 @@ while(true) {
             }
         }
     }
-    sleep(1);
+    sleep(1);// маэ бути тыльки один слып на проект. 1мс.не віхав я що ти хош. ща я тестер доліплю а тут не даэ догнати, выдбираэ.. не встигаэ нада слип бильший, вот того ы нема плавносты, слып епередаэ час вындовсу, все 10кб)
 }
 ?>

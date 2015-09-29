@@ -284,7 +284,7 @@ while(true) {
             $ks++;
             $point = $keys[$ks];
         }
-        if (isset($http['read_connects'][$point])){
+        if (isset($http['read_connects'][$point]) and count(array_keys($http['read_connects'][$point])) > 0){
             $keys = array_keys($http['read_connects'][$point]);
             $kMax = max($keys);
             if ($http['in'][$point] >= $kMax) {
