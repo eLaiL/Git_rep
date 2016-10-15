@@ -288,7 +288,7 @@ while(true) {
                     } else {
                         if (isset($http['size_lefts'][$point][$http['in'][$point]])) $http['size_lefts'][$point][$http['in'][$point]] = $http['size_lefts'][$point][$http['in'][$point]] - $bytes;
                     }
-                    if ($bytes > 0) // фільтр тільки на спрацювавшуюся запісь\\ + завісає, бо нема обробки сброса подключения в цьому блоку а це
+                    if ($bytes > 0) 
                         $http['Time_response'][$point] = $http['Time_response'][$point] + $http['timeToAdd'][$point];
                 } else break;
 
@@ -313,6 +313,6 @@ while(true) {
             }
         }
     }
-    sleep(1);// маэ бути тыльки один слып на проект. 1мс.не віхав я що ти хош. ща я тестер доліплю а тут не даэ догнати, выдбираэ.. не встигаэ нада слип бильший, вот того ы нема плавносты, слып епередаэ час вындовсу, все 10кб)
+    sleep(1);
 }
 ?>
