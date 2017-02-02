@@ -73,7 +73,7 @@ $productsDiscount = $data->find('li[class=markedDown]');// this is all procuts i
 $products = array_merge($products, $productsDiscount);
 
 foreach ($products as $k => $v) {
-    $href = $products[$k]->children()[0]->href; //jump to product detali page
+    $href = $products[$k]->children()[0]->href; //jump to product detail page
 //    $title_image_src = $products[$k]->children()[0]->children()[0]->children()[0]->src; //src title image
     $title = $products[$k]->children()[0]->children()[1];//title
     $title = $title->find('span')[0]->innertext;//title
